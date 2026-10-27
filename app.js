@@ -1,7 +1,8 @@
 import {amountInCents, missingEvidence, sortedEvents, summary} from './case.js';
+import {createExample} from './example.js';
 const $ = id => document.getElementById(id);
 const form = $('case-form');
-let evidence = [], events = [], current = null, generation = 0;
+let evidence = [], events = [], current = null, generation = 0, isExample = false;
 const status = message => { $('status').textContent = message; };
 function invalidate() {
   current = null;
@@ -72,22 +73,39 @@ form.onsubmit = event => {
   try { fields.cents = amountInCents(fields.amount); }
   catch(error) { status(error.message); return; }
   const timeline = [{date:fields.purchaseDate, description:'Purchase made'}, ...sortedEvents(events)];
-  current = {version:1, case:fields, timeline, evidence:[...evidence], summary:summary(fields, timeline, evidence)};
+  current = {version:1, isExample, case:fields, timeline, evidence:[...evidence], summary:(isExample ? 'FICTIONAL EXAMPLE — FOR TESTING ONLY. DO NOT SUBMIT.\n\n' : '') + summary(fields, timeline, evidence)};
   $('summary').textContent = current.summary; $('summary').hidden = false; $('exports').hidden = false;
-  status('Ready for your review. Check all facts and document contents before submitting.');
+  status(isExample ? 'Fictional example ready. Edit the details, remove evidence, or test a download. Do not submit this case.' : 'Ready for your review. Check all facts and document contents before submitting.');
 };
 $('download').onclick = () => {
   if (!current) return;
   const url = URL.createObjectURL(new Blob([JSON.stringify(current,null,2)],{type:'application/json'}));
-  const link = document.createElement('a'); link.href = url; link.download = 'maboy-case-backup.json'; link.click();
+  const link = document.createElement('a'); link.href = url; link.download = isExample ? 'maboy-FICTIONAL-example.json' : 'maboy-case-backup.json'; link.click();
   setTimeout(() => URL.revokeObjectURL(url),1000);
   status('Backup downloaded with attachment bytes. Keep it somewhere private.');
 };
 $('print').onclick = () => { if (current) window.print(); };
 $('clear').onclick = () => {
   if (!confirm('Clear this case and all attached files? Export a backup first if you need it.')) return;
-  generation++; evidence=[]; events=[]; form.reset(); invalidate(); $('summary').textContent=''; draw(); status('Case cleared.');
+  generation++; evidence=[]; events=[]; isExample=false; $('example-notice').hidden=true; form.reset(); invalidate(); $('summary').textContent=''; draw(); status('Case cleared.');
 };
+function loadExample(kind) {
+  if ($('files').disabled) { status('Wait for your evidence files to finish loading before trying an example.'); return; }
+  const hasDraft = evidence.length || events.length || [...new FormData(form)].some(([key,value]) => key !== 'kind' && value.trim());
+  if (hasDraft && !confirm('Replace this draft with a fictional example? Export your current case first if you need it.')) return;
+  generation++;
+  form.reset();
+  const sample = createExample(kind);
+  for (const [key,value] of Object.entries(sample.fields)) form.elements[key].value = value;
+  events = sample.events.map(event => ({...event, id:crypto.randomUUID()}));
+  evidence = sample.documents.map(doc => ({id:crypto.randomUUID(),name:doc.name,category:doc.category,size:new TextEncoder().encode(doc.content).length,dataUrl:`data:text/plain;base64,${btoa(doc.content)}`}));
+  isExample = true; $('example-notice').hidden = false;
+  invalidate(); draw();
+  form.requestSubmit();
+  $('status').scrollIntoView({behavior:'smooth',block:'center'});
+}
+$('example-missing').onclick = () => loadExample('missing');
+$('example-refund').onclick = () => loadExample('refund');
 window.addEventListener('beforeunload', event => {
   if (evidence.length || events.length || form.elements.merchant.value || form.elements.statement.value) { event.preventDefault(); event.returnValue=''; }
 });
