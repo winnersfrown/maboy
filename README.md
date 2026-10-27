@@ -4,6 +4,8 @@ A consumer dispute preparation assistant for purchases that never arrived and pr
 
 ## First prototype
 
+Use **Try a missing-order example** or **Try a refund example** to load fictional case facts, a timeline, and three sample text documents. The summary builds immediately. Try removing evidence to exercise the checklist or download the JSON backup to inspect the embedded sample files. Loading an example asks before replacing an existing draft. Example notices remain in exports and printed summaries until the case is cleared.
+
 Run `python -m http.server 8000` from this folder and visit http://localhost:8000. No installation or API key is required. Run checks with `node --test`.
 
 The app collects case facts, attaches evidence, builds an editable timeline, identifies missing documents, and exports a JSON backup containing attachments. Print the summary to save a PDF; original evidence must be submitted separately to your provider.
