@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>maboy — Put your case together</title><link rel="stylesheet" href="styles.css"><script type="module" src="app.js"></script></head>
+<body>
+<header><a class="brand" href="./">maboy<span> / dispute studio</span></a><span class="badge">LOCAL PROTOTYPE</span></header>
+<main>
+<section class="intro"><p class="eyebrow">YOUR PURCHASE. YOUR PAPER TRAIL.</p><h1>Put your case<br>together.</h1><p>Turn a missing order or an overdue refund into a clear record you can review and share with your payment provider.</p><p class="privacy">Stays in this tab. Export before closing—refreshing clears your work.</p></section>
+<div class="workspace">
+<form id="case-form">
+<section class="card"><div class="section-title"><span>01</span><h2>The essentials</h2></div>
+<label>What happened?<select name="kind"><option value="missing">My purchase never arrived</option><option value="refund">My promised refund never arrived</option></select></label>
+<div class="row"><label>Merchant<input name="merchant" required maxlength="150" placeholder="Store or business name"></label><label>Amount in question (USD)<input name="amount" inputmode="decimal" required placeholder="149.99"></label></div>
+<div class="row"><label>Purchase date<input name="purchaseDate" type="date" required></label><label>Order reference (optional)<input name="reference" maxlength="150" placeholder="Order or receipt number"></label></div>
+<label>What happened, in your own words?<textarea name="statement" required maxlength="10000" rows="4" placeholder="Describe the purchase, what was promised, and what you have tried so far."></textarea></label>
+<label>Requested resolution<textarea name="resolution" required maxlength="2000" rows="2" placeholder="For example: a refund of the amount above."></textarea></label></section>
+<section class="card"><div class="section-title"><span>02</span><h2>The paper trail</h2></div><p class="muted">Attach receipts, tracking records, and merchant messages. PDF, PNG, JPG, or TXT; up to 5 MB each and 20 MB total.</p>
+<label>Document category<select id="category"><option>Receipt</option><option>Merchant correspondence</option><option>Delivery / tracking record</option><option>Refund confirmation</option><option>Other</option></select></label><label class="upload">Choose evidence files<input id="files" type="file" multiple accept=".pdf,.png,.jpg,.jpeg,.txt"></label><ul id="evidence-list" class="items"></ul><div id="checklist" class="checklist"></div></section>
+<section class="card"><div class="section-title"><span>03</span><h2>What happened when?</h2></div><div class="row"><label>Event date<input type="date" id="event-date"></label><label>Event description<input id="event-description" maxlength="2000" placeholder="Contacted merchant about missing order"></label></div><button type="button" id="add-event" class="secondary">Add to timeline</button><ul id="timeline" class="items"></ul></section>
+<div class="actions"><button type="submit">Build my summary <span aria-hidden="true">↗</span></button><button type="button" class="secondary" id="clear">Clear case</button></div>
+</form>
+<aside><section class="card preview"><p class="eyebrow">YOUR CASE, AT A GLANCE</p><h2>A clear record.<br>A stronger starting point.</h2><p class="muted">Start with the facts. Add the documents. Review the result.</p><div id="status" role="status" aria-live="polite"></div><pre id="summary" hidden></pre><div id="exports" hidden><button id="download" type="button">Download backup + evidence</button><button id="print" class="secondary" type="button">Print / save summary as PDF</button><p class="muted">The printed summary lists documents. Attach originals separately when submitting.</p></div></section><p class="aside-note">You stay in control. Nothing is submitted automatically. Your provider determines its requirements and eligibility.</p></aside>
+</div></main><footer>maboy / Make the next step clearer.</footer>
+</body></html>
