@@ -1,9 +1,27 @@
-import {amountInCents, missingEvidence, sortedEvents, summary} from './case.js';
-import {createExample} from './example.js';
+import {amountInCents, missingEvidence, sortedEvents, summary} from './case.js?v=3';
+import {createExample} from './example.js?v=3';
 const $ = id => document.getElementById(id);
 const form = $('case-form');
 let evidence = [], events = [], current = null, generation = 0, isExample = false;
 const status = message => { $('status').textContent = message; };
+let pendingAction = null;
+function askBeforeReplacing(message, action) {
+  pendingAction = action;
+  $('confirm-message').textContent = message;
+  $('confirmation').hidden = false;
+  $('confirm-proceed').focus();
+  $('confirmation').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function dismissConfirmation() {
+  pendingAction = null;
+  $('confirmation').hidden = true;
+}
+$('confirm-proceed').onclick = () => {
+  const action = pendingAction;
+  dismissConfirmation();
+  if (action) action();
+};
+$('confirm-cancel').onclick = () => { dismissConfirmation(); status('Your existing case has been kept.'); };
 function invalidate() {
   current = null;
   $('summary').hidden = true;
@@ -86,13 +104,17 @@ $('download').onclick = () => {
 };
 $('print').onclick = () => { if (current) window.print(); };
 $('clear').onclick = () => {
-  if (!confirm('Clear this case and all attached files? Export a backup first if you need it.')) return;
-  generation++; evidence=[]; events=[]; isExample=false; $('example-notice').hidden=true; form.reset(); invalidate(); $('summary').textContent=''; draw(); status('Case cleared.');
+  askBeforeReplacing('Clear this case and its attached files? Download a backup first if you need to keep them.', () => {
+    generation++; evidence=[]; events=[]; isExample=false; $('example-notice').hidden=true; form.reset(); invalidate(); $('summary').textContent=''; draw(); status('Case cleared.');
+  });
 };
-function loadExample(kind) {
+function loadExample(kind, replacementConfirmed = false) {
   if ($('files').disabled) { status('Wait for your evidence files to finish loading before trying an example.'); return; }
   const hasDraft = evidence.length || events.length || [...new FormData(form)].some(([key,value]) => key !== 'kind' && value.trim());
-  if (hasDraft && !confirm('Replace this draft with a fictional example? Export your current case first if you need it.')) return;
+  if (hasDraft && !replacementConfirmed) {
+    askBeforeReplacing('Replace this draft with a fictional example? Download a backup first if you need to keep your current case.', () => loadExample(kind, true));
+    return;
+  }
   generation++;
   form.reset();
   const sample = createExample(kind);
